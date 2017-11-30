@@ -29,7 +29,12 @@ object BlockHeader {
   val BITS_SIZE = 4
   val NONCE_SIZE = 4
 
-  def parse: Flow[Prefixed[ByteString, ByteString], Prefixed[BlockHeader, ByteString], NotUsed] =
+  def parse: Flow[ByteString, Prefixed[BlockHeader, ByteString], NotUsed] =
+    Flow[ByteString]
+      .via(Streams.bytesPrefixAndTail(Block.HEADER_SIZE))
+      .via(parsePrefixed)
+
+  def parsePrefixed: Flow[Prefixed[ByteString, ByteString], Prefixed[BlockHeader, ByteString], NotUsed] =
     Flow[Prefixed[ByteString, ByteString]].flatMapConcat { prefixed =>
       BlockHeader(prefixed.head) match {
         case Success(parsedHeader) => Source.single(Prefixed(parsedHeader, prefixed.tail))
