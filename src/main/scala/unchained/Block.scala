@@ -88,7 +88,7 @@ object Streams {
           val prefixed = Prefixed[ByteString, ByteString](head, newSource)
 
           Source.single(prefixed)
-        } else tail.via(bytesPrefixAndTail(exactly, acc))
+        } else tail.via(bytesPrefixAndTail(exactly, bytes))
 
       case _ => Source.failed(new Exception("[-] Error parsing block: Could not get block header"))
     }
