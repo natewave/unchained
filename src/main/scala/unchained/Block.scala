@@ -20,6 +20,6 @@ final case class BlockHeader(
 final case class Hash(value: String) extends AnyVal
 
 object Block {
- // def apply(input: InputStream): Try[Block] = ???
- // def apply(bytes: ???): ??? = ???
+  // def apply(input: InputStream): Try[Block] = ???
+  // def apply(bytes: ???): ??? = ???
 }
