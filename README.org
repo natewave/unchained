@@ -1,8 +1,6 @@
 * Unchained: A Scala Bitcoin Blockchain Parser
 
-A simple, fast and functional implementation of bitcoin block protocol written in Scala.
-
-Feed it Bitcoin block data and it will transform it into Scala data structures.
+A simple, fast and functional blockchain block parser written in Scala.
 
 It uses only the Scala standard library. Zero depencies.
 
