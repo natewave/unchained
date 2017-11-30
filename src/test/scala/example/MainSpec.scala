@@ -1,7 +1,3 @@
-package unchained
-
-import org.specs2._
-
-class MainSpec extends Specification {
+class MainSpec extends org.specs2.mutable.Specification {
   // Acceptance specification
 }
