@@ -1,4 +1,4 @@
-import akka.util.ByteString
+//import akka.util.ByteString
 
 class TransactionSpec extends org.specs2.mutable.Specification {
   "Transaction" title

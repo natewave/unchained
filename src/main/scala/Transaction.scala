@@ -17,10 +17,10 @@ class LockTime(val value: Int) extends AnyVal
  */
 class Transaction(
   val version: Int,
-  val inputSize: Transaction.CompactSize,
-  val outputSize: Transaction.CompactSize,
-  val inputs: Source[Transaction.Input, NotUsed],
-  val outputs: Source[Transaction.Outpoint, NotUsed],
+  val inputSize: CompactSize,
+  val outputSize: CompactSize,
+  private[natewave] val inputs: Source[Transaction.Input, NotUsed],
+  private[natewave] val outputs: Source[Transaction.Outpoint, NotUsed],
   val lockTime: LockTime)
 
 object Transaction {
@@ -35,11 +35,6 @@ object Transaction {
     previousOutput: Outpoint,
     signatureScript: Int,
     sequence: Int) // unsigned int 32
-
-  /**
-   * [[https://bitcoin.org/en/developer-reference#compactsize-unsigned-integers Compact size]]
-   */
-  class CompactSize(val value: Long) extends AnyVal
 
   /**
    * [[https://bitcoin.org/en/glossary/signature-script Signature script]]

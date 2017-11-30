@@ -8,5 +8,6 @@ lazy val root = (project in file(".")).
     name := "Unchained") ++ Scalac.settings ++ Seq(
     libraryDependencies ++= specsDepsTest ++ Seq(
       akkaStream, akkaSlf4J, logback,
-      akkaStreamContrib % Test)
+      akkaStreamContrib % Test, akkaStreamTestKit % Test),
+      fork in Test := true
   ) ++ Scalariform.settings ++ Scapegoat.settings)
