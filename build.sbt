@@ -1,13 +1,12 @@
 import Dependencies._
 
 lazy val root = (project in file(".")).
-  settings(
-    inThisBuild(List(
-      organization := "io.github.natewave",
-      scalaVersion := "2.12.3",
-      version      := "0.1.0-SNAPSHOT"
-    )),
-    name := "Unchained",
-    libraryDependencies += specs2 % Test,
-    scalacOptions in Test ++= Seq("-Yrangepos")
-  )
+  settings(Seq(
+    organization := "io.github.natewave",
+    scalaVersion := "2.12.4",
+    version      := "0.1.0-SNAPSHOT",
+    name := "Unchained") ++ Scalac.settings ++ Seq(
+    libraryDependencies ++= specsDepsTest ++ Seq(
+      akkaStream, akkaSlf4J, logback,
+      akkaStreamContrib % Test)
+  ) ++ Scalariform.settings ++ Scapegoat.settings)

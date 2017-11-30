@@ -11,8 +11,8 @@ Protocol specification:
 case class Block()
 
 object Block {
- // def apply(input: InputStream): Try[Block] = ???
- // def apply(bytes: ???): ??? = ???
+  // def apply(input: InputStream): Try[Block] = ???
+  // def apply(bytes: ???): ??? = ???
 }
 
 case class BlockHeader()
