@@ -6,6 +6,7 @@ import akka.stream.scaladsl.{ Sink, Source }
 import unchained.CompactSize, CompactSize.parser
 
 import org.specs2.concurrent.ExecutionEnv
+import org.specs2.specification.core.Fragments
 
 import akka.stream.contrib.TestKit.assertAllStagesStopped
 
@@ -14,7 +15,7 @@ class CompactSizeSpec(implicit ee: ExecutionEnv)
 
   "CompactSize" title
 
-  import Commons.materializer
+  import unchained.{ Commons, SerializationFixtures }, Commons.materializer
 
   "Binary representation" should {
     "be parsed as UInt8" >> {
@@ -52,73 +53,47 @@ class CompactSizeSpec(implicit ee: ExecutionEnv)
     }
 
     "be parsed as UInt16" >> {
-      "from 0xFDFD00 as 253" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(hex2bytes("FDFD00")).via(parser)
+      val prefix = ByteString(0xFD)
 
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(253L))).await
-      }
+      Fragments.foreach(SerializationFixtures.variableUInt16) {
+        case (label, binary, expected) =>
+          s"from (0xFD)$label as $expected" in assertAllStagesStopped {
+            def src: Source[CompactSize, NotUsed] =
+              Source.single(prefix ++ binary).via(parser)
 
-      "from 0xFD0302 as 515" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(hex2bytes("FD0302")).via(parser)
-
-        def parsed = src.runWith(Sink.seq[CompactSize])
-
-        parsed must contain(exactly(CompactSize(515L))).await
-      }
-
-      "from 0xFDFF7F as 32767" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(hex2bytes("FDFF7F")).via(parser)
-
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(32767L))).await
-      }
-
-      "from 0xFDFFFF as 65535" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(ByteString(0xFD, 0xFF, 0xFF)).via(parser)
-
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(65535L))).await
+            src.runWith(Sink.seq[CompactSize]) must contain(
+              exactly(CompactSize(expected))).await
+          }
       }
     }
 
     "be parsed as UInt32" >> {
-      "from 0xFE00000100 as 65536" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(hex2bytes("FE00000100")).via(parser)
+      val prefix = ByteString(0xFE)
 
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(65536L))).await
-      }
+      Fragments.foreach(SerializationFixtures.variableUInt32) {
+        case (label, binary, expected) =>
+          s"from (0xFE)${label} as $expected" in assertAllStagesStopped {
+            def src: Source[CompactSize, NotUsed] =
+              Source.single(prefix ++ binary).via(parser)
 
-      "from 0xFEFFFFFFFF as 65536" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(ByteString(0xFE, 0, 0, 0x01, 0)).via(parser)
-
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(65536L))).await
+            src.runWith(Sink.seq[CompactSize]) must contain(
+              exactly(CompactSize(expected))).await
+          }
       }
     }
 
     "be parsed as UInt64" >> {
-      "from 0xFF0000000001000000 as 4294967296" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] =
-          Source.single(ByteString(0xFF, 0, 0, 0, 0, 1, 0, 0, 0)).via(parser)
+      val prefix = ByteString(0xFF)
 
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(4294967296L))).await
-      }
+      Fragments.foreach(SerializationFixtures.variableUInt64) {
+        case (label, binary, expected) =>
+          s"from (0xFF)${label} as $expected" in assertAllStagesStopped {
+            def src: Source[CompactSize, NotUsed] =
+              Source.single(prefix ++ binary).via(parser)
 
-      "as Long.MaxValue" in assertAllStagesStopped {
-        def src: Source[CompactSize, NotUsed] = Source.single(ByteString(
-          0xFF, -1, -1, -1, -1, -1, -1, -1, 127)).via(parser)
-
-        src.runWith(Sink.seq[CompactSize]) must contain(
-          exactly(CompactSize(Long.MaxValue))).await
+            src.runWith(Sink.seq[CompactSize]) must contain(
+              exactly(CompactSize(expected))).await
+          }
       }
 
       "from 0xFFFFFFFFFFFFFFFFFF as (2 * Long.MaxValue)" in {
@@ -138,10 +113,4 @@ class CompactSizeSpec(implicit ee: ExecutionEnv)
       }
     }
   }
-
-  // ---
-
-  @inline def hex2bytes(hex: String): ByteString =
-    ByteString(hex.replaceAll("[^0-9A-Fa-f]", "").sliding(2, 2).toArray.
-      map(Integer.parseInt(_, 16).toByte))
 }

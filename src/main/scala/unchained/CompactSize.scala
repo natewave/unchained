@@ -30,11 +30,25 @@ object CompactSize {
         case Some(byte) if (byte >= 0) => // 1 byte up to 127
           Source.single(new CompactSize(BigInt(byte.toInt)))
 
-        case Some(byte) if (byte >= lower && byte < UInt16) => // 1 byte
+        case Some(byte) if (byte >= Int8 && byte < UInt16) => // 1 byte
           Source.single(new CompactSize(BigInt((byte & 0xFF).toInt)))
 
-        case Some(varLen) =>
-          variableLength(varLen, repr.tail).map { new CompactSize(_) }
+        case Some(varSz) => {
+          val varLen: Byte = { // byte count
+            if (varSz == UInt16) 2
+            else if (varSz == UInt32) 4
+            else if (varSz == UInt64) 8
+            else 0
+          }
+
+          if (varLen == 0) {
+            Source.failed[CompactSize](new IllegalArgumentException(
+              s"Invalid CompactSize length: $varSz"))
+          } else {
+            Serialization.variableUnsigned(
+              varLen, repr.tail).map { new CompactSize(_) }
+          }
+        }
 
         case _ => Source.empty[CompactSize]
       }
@@ -42,52 +56,8 @@ object CompactSize {
 
   // ---
 
-  private val lower = 0x80.toByte // short 128 as byte
-
+  private val Int8 = 0x80.toByte // short 128 as byte
   private val UInt16 = 0xFD.toByte
   private val UInt32 = 0xFE.toByte
   private val UInt64 = 0xFF.toByte
-
-  import java.nio.ByteOrder.LITTLE_ENDIAN
-
-  private val uint64Mask = BigInt(Array[Byte](0, 0, 0, 0, 0, 0, 0, 0, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte))
-
-  /**
-   * Parses a [[CompactSize]] from a variable length representation.
-   *
-   * @param length the expected length
-   * @param data the binary data
-   */
-  private def variableLength(length: Byte, data: ByteString): Source[BigInt, NotUsed] = {
-    def byteBuf = data.asByteBuffer.order(LITTLE_ENDIAN)
-
-    if (length == UInt16) {
-      def int: Int = (byteBuf.getShort & /*unsigned*/ 0x0000FFFF).toInt
-
-      if (data.size == 2) {
-        Source.single(BigInt(int))
-      } else {
-        Source.failed[BigInt](new IllegalArgumentException(
-          s"Invalid CompactSize length: ${data.size} != 2 (uint16)"))
-      }
-    } else if (length == UInt32) {
-      def long: Long = (byteBuf.getInt & /*unsigned*/ 0x00000000FFFFFFFF).toLong
-      if (data.size == 4) {
-        Source.single(BigInt(long))
-      } else {
-        Source.failed[BigInt](new IllegalArgumentException(
-          s"Invalid CompactSize length: ${data.size} != 4 (uint32)"))
-      }
-    } else if (length == UInt64) {
-      if (data.size == 8) {
-        Source.single(BigInt(byteBuf.getLong) & uint64Mask)
-      } else {
-        Source.failed[BigInt](new IllegalArgumentException(
-          s"Invalid CompactSize length: ${data.size} != 8 (uint64)"))
-      }
-    } else {
-      Source.failed[BigInt](new IllegalArgumentException(
-        s"Invalid CompactSize length: $length"))
-    }
-  }
 }
