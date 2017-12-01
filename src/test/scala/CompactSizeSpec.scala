@@ -16,9 +16,9 @@ class CompactSizeSpec(implicit ee: ExecutionEnv)
 
   import Commons.materializer
 
-  "Binary representation" should {
-    "be parsed as UInt8" >> {
-      "from 0" in assertAllStagesStopped {
+  "Block header" should {
+    "be parsed as BlockHeader" >> {
+      "from file" in assertAllStagesStopped {
         def src: Source[CompactSize, NotUsed] =
           Source.single(ByteString(Array[Byte](0))).via(parser)
 

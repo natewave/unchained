@@ -1,18 +1,16 @@
 package unchained
 
-/*
-
-Protocol specification:
-  - https://en.bitcoin.it/wiki/Protocol_documentation#block
-
-
-*/
-
-case class Block()
+//case class Block(header, coinbase, tx[])
 
 object Block {
-  // def apply(input: InputStream): Try[Block] = ???
-  // def apply(bytes: ???): ??? = ???
-}
+  val HEADER_SIZE = 80 // header size represented in bytes
 
-case class BlockHeader()
+  // data to be skipped at the begining of a block
+  val MAGIC_NO_SIZE = 4
+  val BLOCK_SIZE_SIZE = 4 // size of block_size (4 bytes)
+  val SKIP_SIZE = MAGIC_NO_SIZE + BLOCK_SIZE_SIZE
+
+  val METADATA_SIZE = SKIP_SIZE + HEADER_SIZE
+
+  def headerWithPayload = BlockHeader.parser _
+}
