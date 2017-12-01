@@ -5,23 +5,23 @@ import akka.util.ByteString
 object SerializationFixtures {
   // Label: Binary representation - Expected uint16
   val variableUInt16 = Seq[(String, ByteString, BigInt)](
-    ("0xFDFD00", hex2bytes("FDFD00"), BigInt(253L)),
-    ("0xFD0302", hex2bytes("FD0302"), BigInt(515L)),
-    ("0xFDFF7F", hex2bytes("FDFF7F"), BigInt(32767L)),
-    ("0xFDFFFF", ByteString(0xFD, 0xFF, 0xFF), BigInt(65535L)))
+    ("FD00", hex2bytes("FD00"), BigInt(253L)),
+    ("0302", hex2bytes("0302"), BigInt(515L)),
+    ("FF7F", hex2bytes("FF7F"), BigInt(32767L)),
+    ("FFFF", ByteString(0xFF, 0xFF), BigInt(65535L)))
 
   // Label: Binary representation - Expected uint32
   val variableUInt32 = Seq[(String, ByteString, BigInt)](
-    ("0xFE00000100", hex2bytes("FE00000100"), BigInt(65536L)),
-    ("0xFEFFFFFFFF", ByteString(0xFE, 0, 0, 0x01, 0), BigInt(65536L)))
+    ("00000100", hex2bytes("00000100"), BigInt(65536L)),
+    ("FFFFFFFF", ByteString(0, 0, 0x01, 0), BigInt(65536L)))
 
   // Label: Binary representation - Expected uint64
   val variableUInt64 = Seq[(String, ByteString, BigInt)](
-    ("0xFF0000000001000000",
-      ByteString(0xFF, 0, 0, 0, 0, 1, 0, 0, 0),
+    ("0000000001000000",
+      ByteString(0, 0, 0, 0, 1, 0, 0, 0),
       BigInt(4294967296L)),
     ("Long.MaxValue",
-      ByteString(0xFF, -1, -1, -1, -1, -1, -1, -1, 127),
+      ByteString(-1, -1, -1, -1, -1, -1, -1, 127),
       BigInt(Long.MaxValue)))
 
   // ---

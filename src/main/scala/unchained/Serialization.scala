@@ -8,7 +8,6 @@ import akka.util.ByteString
 
 import akka.stream.scaladsl.Source
 
-// TODO: Unit test after refactoring fixtures-tests from CompactSize
 private[unchained] object Serialization {
   /**
    * Parses a [[CompactSize]] from a variable length representation.
@@ -17,18 +16,30 @@ private[unchained] object Serialization {
    * @param data the binary data
    */
   def variableUnsigned(length: Byte, data: ByteString): Source[BigInt, NotUsed] = {
-    def byteBuf = data.asByteBuffer.order(LITTLE_ENDIAN)
+    def byteBuf(d: ByteString) = d.asByteBuffer.order(LITTLE_ENDIAN)
 
-    if (length <= 2) {
-      def int: Int = (byteBuf.getShort & /*unsigned*/ 0x0000FFFF).toInt
+    if (length == 1) {
+      val buf = byteBuf(data :+ (0x00: Byte))
+      def int: Int = (buf.getShort & /*unsigned*/ 0x0000FFFF).toInt
 
       Source.single(BigInt(int))
-    } else if (length <= 4) {
-      def long: Long = (byteBuf.getInt & /*unsigned*/ 0x00000000FFFFFFFF).toLong
+    } else if (length == 2) {
+      def int: Int = (byteBuf(data).getShort & /*unsigned*/ 0x0000FFFF).toInt
+
+      Source.single(BigInt(int))
+    } else if (length == 3) {
+      val buf = byteBuf(data :+ (0x00: Byte))
+      def long: Long = (buf.getInt & /*unsigned*/ 0x00000000FFFFFFFF).toLong
 
       Source.single(BigInt(long))
-    } else if (length <= 8) {
-      Source.single(BigInt(byteBuf.getLong) & uint64Mask)
+    } else if (length == 4) {
+      def long: Long = (byteBuf(data).
+        getInt & /*unsigned*/ 0x00000000FFFFFFFF).toLong
+
+      Source.single(BigInt(long))
+      // TODO: if length < 8?
+    } else if (length == 8) {
+      Source.single(BigInt(byteBuf(data).getLong) & uint64Mask)
     } else {
       Source.failed[BigInt](new IllegalArgumentException(
         s"Invalid length: $length"))

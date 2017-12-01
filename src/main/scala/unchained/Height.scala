@@ -35,9 +35,16 @@ object Height {
       } else {
         val len = buf.order(java.nio.ByteOrder.LITTLE_ENDIAN).get()
 
-        Serialization.variableUnsigned(len, repr.tail).
-          map { new Height(_) }
+        if (len > MaxBytes) {
+          Source.failed[Height](new IllegalArgumentException(
+            s"Invalid Height length: $len > $MaxBytes"))
+        } else {
+          Serialization.variableUnsigned(len, repr.tail).map { new Height(_) }
+        }
       }
     }
 
+  // ---
+
+  private val MaxBytes: Byte = 4
 }
