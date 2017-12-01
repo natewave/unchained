@@ -3,7 +3,7 @@ import akka.util.ByteString
 
 import akka.stream.scaladsl.{ Sink, Source }
 
-import io.github.natewave.CompactSize, CompactSize.parser
+import unchained.CompactSize, CompactSize.parser
 
 import org.specs2.concurrent.ExecutionEnv
 

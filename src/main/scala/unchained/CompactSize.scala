@@ -1,4 +1,4 @@
-package io.github.natewave
+package unchained
 
 import akka.NotUsed
 import akka.util.ByteString

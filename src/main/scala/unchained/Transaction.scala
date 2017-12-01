@@ -1,4 +1,4 @@
-package io.github.natewave
+package unchained
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
@@ -15,12 +15,12 @@ class LockTime(val value: Int) extends AnyVal
  * @param inputs the [[Transaction.Input]]s
  * @param outputs the [[Transaction.Outpoint]]s
  */
-class Transaction(
+class PlainTransaction(
   val version: Int,
   val inputSize: CompactSize,
   val outputSize: CompactSize,
-  private[natewave] val inputs: Source[Transaction.Input, NotUsed],
-  private[natewave] val outputs: Source[Transaction.Outpoint, NotUsed],
+  private[unchained] val inputs: Source[Transaction.Input, NotUsed],
+  private[unchained] val outputs: Source[Transaction.Output, NotUsed],
   val lockTime: LockTime)
 
 object Transaction {
@@ -28,20 +28,26 @@ object Transaction {
    * Transaction input ([[https://bitcoin.org/en/developer-reference#txin TxIn]]).
    *
    * @param previousOutput the previous outpoint being spent
-   * @param signatureScript the signature script
+   * @param scriptBytes the size of the signature script
    * @param sequence the [[https://bitcoin.org/en/glossary/sequence-number sequence number]]
    */
   case class Input(
     previousOutput: Outpoint,
-    signatureScript: Int,
+    scriptBytes: CompactSize,
+    signatureScript: String,
     sequence: Int) // unsigned int 32
 
   /**
-   * [[https://bitcoin.org/en/glossary/signature-script Signature script]]
+   * Transaction output ([[https://bitcoin.org/en/developer-reference#txout TxOut]])
    *
-   * @param value the underlying script value
+   * @param value the number of satoshis to spend
+   * @param pkScriptBytes the number of bytes in the pubkey script
+   * @param pkScript the conditions which must be satisfied to spend this output
    */
-  class SignatureScript(val value: String) extends AnyVal
+  case class Output(
+    value: Long,
+    pkScriptBytes: CompactSize,
+    pkScript: String)
 
   /**
    * Transaction [[https://bitcoin.org/en/developer-reference#outpoint outpoint]]
