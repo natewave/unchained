@@ -9,8 +9,13 @@ object Dependencies {
   @inline def specsDepsTest = specsDeps.map(_ % Test)
 
   val akkaVer = "2.5.4"
-  val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaVer
+
   val akkaSlf4J = "com.typesafe.akka" %% "akka-slf4j" % akkaVer
+
+  val akkaStream = "com.typesafe.akka" %% "akka-stream" % akkaVer
+  val akkaStreamTestKit =
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaVer
+
   val akkaStreamContrib = "com.typesafe.akka" %% "akka-stream-contrib" % "0.8"
 
   val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
